@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from typing import Optional
+from pydantic import BaseModel
+import uvicorn
 
 app = FastAPI()
 
@@ -25,3 +27,12 @@ def show(id: int): #pydantic model
 @app.get("/blog/{id}/comments")
 def comments(id:int, limit:int = 10): #query parameter to get 10 comments
     return {"data": {"1", "2"}}
+
+class Blog(BaseModel):
+    title: str
+    body: str
+    published: Optional[bool]
+
+@app.post("/blog")
+def create_blog(request: Blog): #request body
+    return {"data": f"Blog is created with title as {request.title}"} 
