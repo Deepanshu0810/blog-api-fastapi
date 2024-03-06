@@ -28,3 +28,16 @@ class ShowBlog(BaseModel):
     # orm_mode is used to tell pydantic to read the data even if it is not a dict
     class Config():
         orm_mode = True
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: str = None
+    class Config():
+        orm_mode = True
