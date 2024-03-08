@@ -1,21 +1,23 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
-from ..schemas import ShowBlog, Blog
+from ..schemas import ShowBlog, Blog, User
 from ..database import get_db
 from .. import models
+from ..oauth2 import get_current_user
 
 
 router = APIRouter(
+    prefix='/blogs',
     tags=['blogs']
 )
 
 @router.get('/',status_code=status.HTTP_200_OK, response_model=list[ShowBlog])
-def get_all_blogs(db: Session = Depends(get_db)):
+def get_all_blogs(db: Session = Depends(get_db), current_user: User = Depends(get_current_user) ):
     blogs = db.query(models.Blog).all()
     return blogs
 
 @router.post('/',status_code=status.HTTP_201_CREATED, response_model=ShowBlog)
-def create_blog(request: Blog, db: Session = Depends(get_db)):
+def create_blog(request: Blog, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     new_blog = models.Blog(title=request.title, body=request.body, creator_id=1)
     db.add(new_blog)
     db.commit()
@@ -23,7 +25,7 @@ def create_blog(request: Blog, db: Session = Depends(get_db)):
     return new_blog
 
 @router.delete('/{id}',status_code=status.HTTP_204_NO_CONTENT)
-def delete_blog(id:int, db: Session = Depends(get_db)):
+def delete_blog(id:int, db: Session = Depends(get_db),current_user: User = Depends(get_current_user) ):
     blog = db.query(models.Blog).filter(models.Blog.id == id)
     if not blog.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Blog with id {id} is not available")
@@ -32,7 +34,7 @@ def delete_blog(id:int, db: Session = Depends(get_db)):
     return {'data':'done'}
 
 @router.put('/{id}',status_code=status.HTTP_202_ACCEPTED, response_model=ShowBlog)
-def update_blog(id:int, request: Blog, db: Session = Depends(get_db)):
+def update_blog(id:int, request: Blog, db: Session = Depends(get_db),current_user: User = Depends(get_current_user) ):
     blog = db.query(models.Blog).filter(models.Blog.id == id)
     if not blog.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Blog with id {id} is not available")
@@ -42,7 +44,7 @@ def update_blog(id:int, request: Blog, db: Session = Depends(get_db)):
     return blog
 
 @router.get('/{id}',status_code=status.HTTP_200_OK, response_model=ShowBlog)
-def show_blog(id:int, db: Session = Depends(get_db)):
+def show_blog(id:int, db: Session = Depends(get_db),current_user: User = Depends(get_current_user) ):
     blog = db.query(models.Blog).filter(models.Blog.id == id).first()
     if not blog:
         return HTTPException(status.HTTP_404_NOT_FOUND, detail=f"Blog with id {id} is not available")

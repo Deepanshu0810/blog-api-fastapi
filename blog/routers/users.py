@@ -6,7 +6,7 @@ from ..hashing import Hash
 from .. import models
 
 router = APIRouter(
-    prefix='/blog',
+    prefix='/user',
     tags=['users']
 )
 
